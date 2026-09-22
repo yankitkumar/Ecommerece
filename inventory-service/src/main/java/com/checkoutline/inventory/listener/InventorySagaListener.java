@@ -1,5 +1,6 @@
 package com.checkoutline.inventory.listener;
 
+import com.checkoutline.events.OrderConfirmedEvent;
 import com.checkoutline.events.OrderCreatedEvent;
 import com.checkoutline.events.PaymentFailedEvent;
 import com.checkoutline.events.Topics;
@@ -42,6 +43,15 @@ public class InventorySagaListener {
     public void onPaymentFailed(String payload) throws Exception {
         var event = objectMapper.readValue(payload, PaymentFailedEvent.class);
         reservationService.releaseReservationsForOrder(event.orderId());
+    }
+
+    /** order.confirmed means payment landed — commit these reservations so the expiry job leaves them alone. */
+    @RetryableTopic(attempts = "4", backoff = @Backoff(delay = 1000, multiplier = 2.0),
+            topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE)
+    @KafkaListener(topics = Topics.ORDER_CONFIRMED, groupId = "inventory-service")
+    public void onOrderConfirmed(String payload) throws Exception {
+        var event = objectMapper.readValue(payload, OrderConfirmedEvent.class);
+        reservationService.commitReservationsForOrder(event.orderId());
     }
 
     @DltHandler

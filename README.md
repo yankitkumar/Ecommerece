@@ -18,7 +18,7 @@ actually wired up in the code, not just documented.
 | `cart-service` | 8083 | Redis | Temporary shopping carts (7-day TTL) |
 | `inventory-service` | 8084 | PostgreSQL | Stock levels, reservations |
 | `order-service` | 8085 | PostgreSQL | Order lifecycle, saga coordination via outbox |
-| `payment-service` | 8086 | PostgreSQL | Charges (mocked), idempotent on `order_id` |
+| `payment-service` | 8086 | PostgreSQL | Charges and refunds (mocked), idempotent on `order_id` |
 | `notification-service` | 8087 | PostgreSQL | Email/SMS — driven only by events |
 
 `payment-service` has **no public route** through the gateway on purpose — it
@@ -116,6 +116,13 @@ money moving.
 - **Circuit breaker** (Resilience4j) around Payment Service's synchronous
   call to Order Service — an Order Service outage degrades that one call
   instead of jamming the consumer.
+- **Reservation expiry** — a `@Scheduled` job in Inventory Service releases
+  any stock reservation still `RESERVED` after 15 minutes, so a lost or
+  never-sent payment event doesn't hold stock forever. A reservation is
+  taken out of the job's reach as soon as `order.confirmed` arrives.
+- **Rate limiting** at the gateway — Spring Cloud Gateway's Redis-backed
+  `RequestRateLimiter` (20 req/s, burst 40) keyed by user id once a token
+  validates, or by IP before that (`/auth/**`, anonymous browsing).
 
 ## Running it locally
 

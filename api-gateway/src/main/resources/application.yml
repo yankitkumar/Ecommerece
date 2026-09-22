@@ -5,8 +5,20 @@ spring:
   application:
     name: api-gateway
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   cloud:
     gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 20
+            redis-rate-limiter.burstCapacity: 40
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@rateLimiterKeyResolver}"
       routes:
         - id: user-service
           uri: ${USER_SERVICE_URL:http://localhost:8081}
@@ -16,7 +28,7 @@ spring:
         - id: catalog-service
           uri: ${CATALOG_SERVICE_URL:http://localhost:8082}
           predicates:
-            - Path=/products/**
+            - Path=/products/**,/categories/**
 
         - id: cart-service
           uri: ${CART_SERVICE_URL:http://localhost:8083}
