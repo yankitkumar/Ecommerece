@@ -26,6 +26,11 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+inventory:
+  reservation:
+    expiry-minutes: 15
+    expiry-check-interval-ms: 60000
+
 management:
   endpoints:
     web:

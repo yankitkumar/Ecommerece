@@ -47,6 +47,7 @@ public class StockReservation {
     }
 
     public void markReleased() { this.status = ReservationStatus.RELEASED; }
+    public void markCommitted() { this.status = ReservationStatus.COMMITTED; }
 
     public String getId() { return id; }
     public String getOrderId() { return orderId; }

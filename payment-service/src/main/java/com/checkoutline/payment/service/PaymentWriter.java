@@ -52,6 +52,15 @@ public class PaymentWriter {
         log.warn("Payment failed for order {}: {}", orderId, reason);
     }
 
+    /** Mock refund: marks a successful charge as REFUNDED. No real gateway call, no event — nothing downstream reacts to a refund today. */
+    @Transactional
+    public Payment recordRefund(Payment payment) {
+        payment.markRefunded();
+        Payment saved = paymentRepository.save(payment);
+        log.info("Refunded order {} (payment {})", payment.getOrderId(), payment.getId());
+        return saved;
+    }
+
     private void writeOutbox(String orderId, String eventType, Object event) {
         try {
             String json = objectMapper.writeValueAsString(event);

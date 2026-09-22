@@ -43,6 +43,8 @@ public class Payment {
         this.providerRef = providerRef;
     }
 
+    public void markRefunded() { this.status = PaymentStatus.REFUNDED; }
+
     public String getId() { return id; }
     public String getOrderId() { return orderId; }
     public BigDecimal getAmount() { return amount; }

@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+
 @Service
 public class ReservationService {
 
@@ -97,6 +99,38 @@ public class ReservationService {
             reservationRepository.save(reservation);
         }
         log.info("Released {} reservation(s) for order {}", reservations.size(), orderId);
+    }
+
+    /** Terminal success: order.confirmed means payment landed, so these reservations are done — take them out of the expiry job's reach. */
+    @Transactional
+    public void commitReservationsForOrder(String orderId) {
+        var reservations = reservationRepository.findByOrderId(orderId);
+        for (StockReservation reservation : reservations) {
+            if (reservation.getStatus() == ReservationStatus.RESERVED) {
+                reservation.markCommitted();
+                reservationRepository.save(reservation);
+            }
+        }
+    }
+
+    /**
+     * Safety net for a payment that never arrives (Payment Service down, message lost, etc.):
+     * releases any reservation that's been sitting in RESERVED past the cutoff, same as an
+     * explicit payment.failed would.
+     */
+    @Transactional
+    public void expireStaleReservations(Instant cutoff) {
+        var stale = reservationRepository.findByStatusAndCreatedAtBefore(ReservationStatus.RESERVED, cutoff);
+        for (StockReservation reservation : stale) {
+            Inventory inventory = inventoryRepository.findById(reservation.getProductId()).orElseThrow();
+            inventory.release(reservation.getQuantity());
+            inventoryRepository.save(inventory);
+            reservation.markReleased();
+            reservationRepository.save(reservation);
+            log.warn("Expired stale reservation {} for order {} (created {}) — released {} units of {}",
+                    reservation.getId(), reservation.getOrderId(), reservation.getCreatedAt(),
+                    reservation.getQuantity(), reservation.getProductId());
+        }
     }
 
     private void writeOutbox(String orderId, String eventType, Object event) {
