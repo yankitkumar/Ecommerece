@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/auth/**,/users/**
+
+        - id: catalog-service
+          uri: ${CATALOG_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/products/**
+
+        - id: cart-service
+          uri: ${CART_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/cart/**
+
+        - id: inventory-service
+          uri: ${INVENTORY_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/inventory/**
+
+        - id: order-service
+          uri: ${ORDER_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/orders/**
+
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/notifications/**
+
+        # payment-service has no route here on purpose: it's never called directly, only
+        # triggered by inventory.reserved — see the design doc's Kafka saga section.
+
+security:
+  jwt:
+    secret: ${SECURITY_JWT_SECRET:checkoutline-dev-secret-change-me-checkoutline-dev-secret}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+logging:
+  level:
+    com.checkoutline: INFO
+    org.springframework.cloud.gateway: INFO

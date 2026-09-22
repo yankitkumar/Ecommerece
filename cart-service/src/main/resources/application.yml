@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: cart-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+services:
+  catalog:
+    base-url: ${CATALOG_SERVICE_URL:http://localhost:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.checkoutline: INFO
