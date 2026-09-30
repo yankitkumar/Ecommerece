@@ -207,5 +207,6 @@ ecommerce-microservices/
 ├── payment-service/       Postgres, outbox, circuit breaker
 ├── notification-service/  Postgres, terminal saga consumer
 ├── db-init/               Postgres init script (one DB per service)
+├── finance-toolkit/       Standalone Python learning project: TVM, loans, NPV/IRR, risk
 └── docker-compose.yml     Kafka (KRaft), Postgres, Mongo, Redis, Kafka UI
 ```
