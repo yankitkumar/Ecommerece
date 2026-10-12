@@ -11,31 +11,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/calculator")
-public class CalculatorController {
+@RequestMapping("/api/calculator/divide")
+public class DivideController {
 
-    private final CalculatorService service;
+    private final DivideService service;
 
-    public CalculatorController(CalculatorService service) {
+    public DivideController(DivideService service) {
         this.service = service;
     }
 
-    @GetMapping("/add")
-    public Map<String, BigDecimal> add(@RequestParam BigDecimal a, @RequestParam BigDecimal b) {
-        return Map.of("result", service.add(a, b));
-    }
-
-    @GetMapping("/subtract")
-    public Map<String, BigDecimal> subtract(@RequestParam BigDecimal a, @RequestParam BigDecimal b) {
-        return Map.of("result", service.subtract(a, b));
-    }
-
-    @GetMapping("/multiply")
-    public Map<String, BigDecimal> multiply(@RequestParam BigDecimal a, @RequestParam BigDecimal b) {
-        return Map.of("result", service.multiply(a, b));
-    }
-
-    @GetMapping("/divide")
+    @GetMapping
     public Map<String, BigDecimal> divide(@RequestParam BigDecimal a, @RequestParam BigDecimal b) {
         return Map.of("result", service.divide(a, b));
     }
