@@ -1,0 +1,44 @@
+<h2>Create account</h2>
+
+<!-- [formGroup] binds this <form> to the FormGroup in the component class. -->
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label>
+    Full name
+    <input formControlName="fullName" />
+  </label>
+  @if (invalid('fullName')) {
+    <small class="error">Full name is required.</small>
+  }
+
+  <label>
+    Email
+    <input type="email" formControlName="email" />
+  </label>
+  @if (invalid('email')) {
+    <small class="error">Enter a valid email address.</small>
+  }
+
+  <label>
+    Password
+    <input type="password" formControlName="password" />
+  </label>
+  @if (invalid('password')) {
+    <small class="error">Password must be at least 8 characters.</small>
+  }
+
+  <label>
+    Confirm password
+    <input type="password" formControlName="confirmPassword" />
+  </label>
+  @if (form.errors?.['mismatch'] && form.controls.confirmPassword.touched) {
+    <small class="error">Passwords do not match.</small>
+  }
+
+  <button type="submit" [disabled]="submitting()">
+    {{ submitting() ? 'Creating…' : 'Register' }}
+  </button>
+</form>
+
+@if (message(); as m) {
+  <p [class]="m.ok ? 'success' : 'error'">{{ m.text }}</p>
+}
